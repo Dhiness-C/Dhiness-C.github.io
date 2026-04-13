@@ -37,7 +37,7 @@
         'clear — clear the terminal'
       ].join('\n');
     },
-    about(){ return 'Dhiness. C — tinkerer, dev, audio hobbyist.\nI like retro terminals and sonic experiments.'; },
+    about(){ return 'My name is Dhiness.C.\nI love to build things that is completely different to what I know, only so I can learn more.\n I also love bouldering, its my escape from reality.\n I do a lot of personal projects in my free time.'; },
     projects(){ return 'projects:\n- tiny-audio\n- retro-tools\n- misc experiments\n(see GitHub)'; },
     github(){ return 'https://github.com/Dhiness-C'; },
     soundcloud(){ return 'https://soundcloud.com/'; },
