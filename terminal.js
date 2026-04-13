@@ -1,107 +1,96 @@
-// Minimal in-page terminal emulator
+// Clean, self-initializing in-page terminal
 (function(){
   const out = document.getElementById('terminal-output');
-  const form = document.getElementById('terminal-form');
-  const input = document.getElementById('cmd');
-  const promptStr = 'dhiness@local:~$';
+  if(!out) return;
+
+  const PROMPT = (function(){
+    try { return (window.COMPUTER_NAME || 'visitor') + '@local:~$'; } catch(e){ return 'visitor@local:~$'; }
+  })();
+
   let history = [];
   let hidx = 0;
 
-  function write(text, opts={}){
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function writeLine(html){
     const el = document.createElement('div');
-    el.innerHTML = text;
+    el.className = 'terminal-line';
+    el.innerHTML = html;
     out.appendChild(el);
     out.scrollTop = out.scrollHeight;
+    return el;
   }
 
-  (function(){
-    const out = document.getElementById('terminal-output');
-    const promptStr = 'visitor@local:~$';
-    let history = [];
-    let hidx = 0;
+  function clear(){ out.innerHTML = ''; }
 
-    function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  const commands = {
+    help(){ return 'available commands: help about projects github soundcloud clear date echo contact'; },
+    about(){ return 'Dhiness. C — tinkerer, dev, audio hobbyist.\nI like retro terminals and sonic experiments.'; },
+    projects(){ return 'projects:\n- tiny-audio\n- retro-tools\n- misc experiments\n(see GitHub)'; },
+    github(){ return 'https://github.com/Dhiness-C'; },
+    soundcloud(){ return 'https://soundcloud.com/'; },
+    contact(){ return 'discord: Dhiness#0000\nemail: you@example.com'; },
+    date(){ return new Date().toString(); },
+    echo(...args){ return args.join(' '); },
+    clear(){ clear(); return ''; }
+  };
 
-    function writeLine(html){
-      const el = document.createElement('div');
-      el.className = 'terminal-line';
-      el.innerHTML = html;
-      out.appendChild(el);
-      out.scrollTop = out.scrollHeight;
-      return el;
-    }
+  function runCommand(line){
+    if(!line.trim()) return '';
+    const parts = line.split(/\s+/);
+    const cmd = parts[0].toLowerCase();
+    const args = parts.slice(1);
+    if(commands[cmd]) return commands[cmd].apply(null,args);
+    return `command not found: ${cmd}`;
+  }
 
-    function clear(){ out.innerHTML = ''; }
+  function createPrompt(){
+    const line = document.createElement('div');
+    line.className = 'terminal-line';
 
-    const commands = {
-      help(){ return 'available commands: help about projects github soundcloud clear date echo contact'; },
-      about(){ return 'My name is Dhiness.C \nI like coding and building things. \n I also love bouldering with my friends. \n This would not be complete if I did not mention that I also love playing games.'; },
-      projects(){ return 'projects:\n- tiny-audio\n- retro-tools\n- misc experiments\n(see GitHub)'; },
-      github(){ return 'https://github.com/Dhiness-C'; },
-      soundcloud(){ return 'https://soundcloud.com/'; },
-      contact(){ return 'discord: Dhiness#0000\nemail: you@example.com'; },
-      date(){ return new Date().toString(); },
-      echo(...args){ return args.join(' '); },
-      clear(){ clear(); return ''; }
-    };
+    const promptSpan = document.createElement('span');
+    promptSpan.className = 'prompt';
+    promptSpan.textContent = PROMPT + ' ';
 
-    function runCommand(line){
-      if(!line.trim()) return '';
-      const parts = line.split(/\s+/);
-      const cmd = parts[0].toLowerCase();
-      const args = parts.slice(1);
-      if(commands[cmd]) return commands[cmd].apply(null,args);
-      return `command not found: ${cmd}`;
-    }
+    const input = document.createElement('input');
+    input.className = 'terminal-input';
+    input.autocomplete = 'off';
+    input.spellcheck = false;
+    input.setAttribute('aria-label','terminal command input');
 
-    function createPrompt(){
-      const line = document.createElement('div');
-      line.className = 'terminal-line';
-      const promptSpan = document.createElement('span');
-      promptSpan.className = 'prompt';
-      promptSpan.textContent = promptStr + ' ';
-      const input = document.createElement('input');
-      input.className = 'terminal-input';
-      input.autocomplete = 'off';
-      input.spellcheck = false;
-      line.appendChild(promptSpan);
-      line.appendChild(input);
-      out.appendChild(line);
-      input.focus();
+    line.appendChild(promptSpan);
+    line.appendChild(input);
+    out.appendChild(line);
+    input.focus();
 
-      input.addEventListener('keydown', e => {
-        if(e.key === 'Enter'){
-          const val = input.value;
-          history.push(val);
-          hidx = history.length;
-          // replace input with plain text node
-          const text = document.createElement('span');
-          text.className = 'cmd-text';
-          text.innerHTML = escapeHtml(val);
-          line.removeChild(input);
-          line.appendChild(text);
+    input.addEventListener('keydown', e => {
+      if(e.key === 'Enter'){
+        const val = input.value;
+        history.push(val);
+        hidx = history.length;
+        const text = document.createElement('span');
+        text.className = 'cmd-text';
+        text.innerHTML = esc(val);
+        line.removeChild(input);
+        line.appendChild(text);
 
-          // run
-          const res = runCommand(val);
-          if(res !== ''){
-            // preserve line breaks
-            const html = escapeHtml(res).replace(/\n/g,'<br>');
-            writeLine(html);
-          }
-          // new prompt
-          createPrompt();
-        } else if(e.key === 'ArrowUp'){
-          if(history.length && hidx>0) hidx--; input.value = history[hidx]||''; e.preventDefault();
-        } else if(e.key === 'ArrowDown'){
-          if(history.length && hidx < history.length-1) { hidx++; input.value = history[hidx]||''; } else { hidx = history.length; input.value=''; }
+        const res = runCommand(val);
+        if(res !== ''){
+          const html = esc(res).replace(/\n/g,'<br>');
+          writeLine(html);
         }
-        out.scrollTop = out.scrollHeight;
-      });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      writeLine('<div>Welcome to Dhiness. C — type <strong>help</strong> to get started.</div>');
-      createPrompt();
+        createPrompt();
+      } else if(e.key === 'ArrowUp'){
+        if(history.length && hidx>0) hidx--; input.value = history[hidx]||''; e.preventDefault();
+      } else if(e.key === 'ArrowDown'){
+        if(history.length && hidx < history.length-1) { hidx++; input.value = history[hidx]||''; } else { hidx = history.length; input.value=''; }
+      }
+      out.scrollTop = out.scrollHeight;
     });
+  }
 
-  })();
+  // initial content and prompt
+  writeLine('<div>Welcome to Dhiness. C — type <strong>help</strong> to get started.</div>');
+  createPrompt();
+
+})();
