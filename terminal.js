@@ -79,8 +79,17 @@
 
   function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  // welcome message
+  // helper to format date like 'Mon 13 Apr'
+  function menuDateString(d){
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
+  }
+
+  // welcome message and set menubar date
   document.addEventListener('DOMContentLoaded', () => {
+    const md = document.getElementById('menu-date');
+    if(md) md.textContent = menuDateString(new Date());
     write('<div>Welcome to Dhiness. C — type <strong>help</strong> to get started.</div>');
   });
 
