@@ -15,30 +15,22 @@
     </header>
 
     <section class="window">
-      <div class="titlebar">about — lemonsaur-inspired</div>
+      <div class="titlebar">about — Dhiness. C</div>
       <div class="window-body">
-        <h1>hi — i'm lemonsaur</h1>
-        <p class="tagline">tinkerer · audio · projects · blog</p>
-
-        <nav class="links">
-          <a href="/blog">Blog</a>
-          <a href="https://github.com/yourname">GitHub</a>
-          <a href="https://soundcloud.com/">SoundCloud</a>
-          <a href="https://linkedin.com/">LinkedIn</a>
-        </nav>
-
-        <p class="about">short, playful personal blurb. i like retro computer aesthetics, hardware tinkering, and making small audio things.</p>
-
-        <pre class="petscii">░█░░░█▀▀░█▄█░█▀█░█▀█   87K RAM SYSTEM  38911 BASIC BYTES FREE
-░█░░░█▀▀░█░█░█░█░█░█   SCREEN: 40x25  CHARSET: PETSCII
-░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀░▀   READY. TYPE 'HELP' TO SEE AVAILABLE COMMANDS.
-        </pre>
+        <div id="terminal" class="terminal" aria-live="polite">
+          <div class="terminal-output" id="terminal-output"></div>
+          <form id="terminal-form" class="terminal-form">
+            <label for="cmd" class="sr-only">Command</label>
+            <input id="cmd" class="terminal-input" autocomplete="off" autofocus />
+          </form>
+        </div>
 
         <footer>
           <p>made with ♥ · host on GitHub Pages</p>
         </footer>
       </div>
     </section>
+    <script src="terminal.js"></script>
   </div>
 </body>
 </html>
