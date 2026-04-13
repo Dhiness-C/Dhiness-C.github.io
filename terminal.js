@@ -14,83 +14,94 @@
     out.scrollTop = out.scrollHeight;
   }
 
-  function clear(){ out.innerHTML = ''; }
+  (function(){
+    const out = document.getElementById('terminal-output');
+    const promptStr = 'visitor@local:~$';
+    let history = [];
+    let hidx = 0;
 
-  const commands = {
-    help(){
-      return `available commands: help about projects github soundcloud clear date echo contact`; 
-    },
-    about(){
-      return `dhiness. c — tinkerer, dev, audio hobbyist.\nI like retro terminals, small hardware projects, and neat sonic experiments.`;
-    },
-    projects(){
-      return `projects:\n- tiny-audio\n- retro-tools\n- misc experiments\n(visit my GitHub)`;
-    },
-    github(){
-      return `<a href="https://github.com/yourname" target="_blank">https://github.com/yourname</a>`;
-    },
-    soundcloud(){
-      return `<a href="https://soundcloud.com/" target="_blank">https://soundcloud.com/</a>`;
-    },
-    contact(){
-      return `discord: Dhiness#0000 (replace with yours)\nemail: you@example.com`;
-    },
-    date(){ return new Date().toString(); },
-    echo(...args){ return args.join(' '); },
-    clear(){ clear(); return ''; }
-  };
+    function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  function runCommand(line){
-    if(!line.trim()) return '';
-    const parts = line.split(/\s+/);
-    const cmd = parts[0].toLowerCase();
-    const args = parts.slice(1);
-    if(commands[cmd]) return commands[cmd].apply(null,args);
-    return `command not found: ${cmd}`;
-  }
-
-  function renderPrompt(){
-    const p = document.createElement('div');
-    p.innerHTML = `<span class="prompt">${promptStr}</span> ` +
-      `<span class="input-placeholder" aria-hidden="true"></span>`;
-    return p;
-  }
-
-  form.addEventListener('submit', e => {
-    e.preventDefault();
-    const val = input.value;
-    history.push(val);
-    hidx = history.length;
-    const promptLine = `<div><span class="prompt">${promptStr}</span> <span>${escapeHtml(val)}</span></div>`;
-    write(promptLine);
-    const res = runCommand(val);
-    if(res !== '') write(`<div>${escapeHtml(res)}</div>`);
-    input.value = '';
-    input.focus();
-  });
-
-  input.addEventListener('keydown', e => {
-    if(e.key === 'ArrowUp'){
-      if(history.length && hidx>0) hidx--; input.value = history[hidx]||''; e.preventDefault();
-    } else if(e.key === 'ArrowDown'){
-      if(history.length && hidx < history.length-1) { hidx++; input.value = history[hidx]||''; } else { hidx = history.length; input.value=''; }
+    function writeLine(html){
+      const el = document.createElement('div');
+      el.className = 'terminal-line';
+      el.innerHTML = html;
+      out.appendChild(el);
+      out.scrollTop = out.scrollHeight;
+      return el;
     }
-  });
 
-  function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function clear(){ out.innerHTML = ''; }
 
-  // helper to format date like 'Mon 13 Apr'
-  function menuDateString(d){
-    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
-  }
+    const commands = {
+      help(){ return 'available commands: help about projects github soundcloud clear date echo contact'; },
+      about(){ return 'Dhiness. C — tinkerer, dev, audio hobbyist.\nI like retro terminals and sonic experiments.'; },
+      projects(){ return 'projects:\n- tiny-audio\n- retro-tools\n- misc experiments\n(see GitHub)'; },
+      github(){ return 'https://github.com/Dhiness-C'; },
+      soundcloud(){ return 'https://soundcloud.com/'; },
+      contact(){ return 'discord: Dhiness#0000\nemail: you@example.com'; },
+      date(){ return new Date().toString(); },
+      echo(...args){ return args.join(' '); },
+      clear(){ clear(); return ''; }
+    };
 
-  // welcome message and set menubar date
-  document.addEventListener('DOMContentLoaded', () => {
-    const md = document.getElementById('menu-date');
-    if(md) md.textContent = menuDateString(new Date());
-    write('<div>Welcome to Dhiness. C — type <strong>help</strong> to get started.</div>');
-  });
+    function runCommand(line){
+      if(!line.trim()) return '';
+      const parts = line.split(/\s+/);
+      const cmd = parts[0].toLowerCase();
+      const args = parts.slice(1);
+      if(commands[cmd]) return commands[cmd].apply(null,args);
+      return `command not found: ${cmd}`;
+    }
 
-})();
+    function createPrompt(){
+      const line = document.createElement('div');
+      line.className = 'terminal-line';
+      const promptSpan = document.createElement('span');
+      promptSpan.className = 'prompt';
+      promptSpan.textContent = promptStr + ' ';
+      const input = document.createElement('input');
+      input.className = 'terminal-input';
+      input.autocomplete = 'off';
+      input.spellcheck = false;
+      line.appendChild(promptSpan);
+      line.appendChild(input);
+      out.appendChild(line);
+      input.focus();
+
+      input.addEventListener('keydown', e => {
+        if(e.key === 'Enter'){
+          const val = input.value;
+          history.push(val);
+          hidx = history.length;
+          // replace input with plain text node
+          const text = document.createElement('span');
+          text.className = 'cmd-text';
+          text.innerHTML = escapeHtml(val);
+          line.removeChild(input);
+          line.appendChild(text);
+
+          // run
+          const res = runCommand(val);
+          if(res !== ''){
+            // preserve line breaks
+            const html = escapeHtml(res).replace(/\n/g,'<br>');
+            writeLine(html);
+          }
+          // new prompt
+          createPrompt();
+        } else if(e.key === 'ArrowUp'){
+          if(history.length && hidx>0) hidx--; input.value = history[hidx]||''; e.preventDefault();
+        } else if(e.key === 'ArrowDown'){
+          if(history.length && hidx < history.length-1) { hidx++; input.value = history[hidx]||''; } else { hidx = history.length; input.value=''; }
+        }
+        out.scrollTop = out.scrollHeight;
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      writeLine('<div>Welcome to Dhiness. C — type <strong>help</strong> to get started.</div>');
+      createPrompt();
+    });
+
+  })();
