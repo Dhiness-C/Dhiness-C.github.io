@@ -2,20 +2,20 @@
 :root{
   --page-green: #61BB46;
   --term-bg: #00140b;
-  --term-fg: #61BB46;
+  --term-fg: #FFD966; /* warm yellow for terminal text */
   --menu-fg: rgba(10,10,10,.9);
 }
 *{box-sizing:border-box}
 html,body{height:100%;width:100%;margin:0;background:var(--page-green);font-family:ui-monospace,Menlo,Monaco,monospace}
 .desktop{height:100vh;width:100vw;margin:0;padding:0;display:flex;flex-direction:column}
-.menubar{height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;color:var(--menu-fg);font-size:14px}
+.menubar{height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;color:var(--menu-fg);font-size:14px;background:transparent}
 .menubar .menu-center{opacity:.9}
 .window{flex:1;margin:0;border:0;border-radius:0;box-shadow:none;display:flex}
 .window-body{flex:1;padding:0;background:transparent;display:flex;flex-direction:column}
 .titlebar{display:none}
 
 /* Terminal occupies the entire remaining space */
-.terminal{flex:1;background:var(--term-bg);color:var(--term-fg);display:flex;flex-direction:column;padding:16px;margin:0;border-radius:0}
+.terminal{flex:1;background:var(--term-bg);color:var(--term-fg);display:flex;flex-direction:column;padding:12px;margin:0;border-radius:0;border-top:0}
 .terminal-output{flex:1;min-height:0;overflow:auto;white-space:pre-wrap;font-size:15px;line-height:1.35}
 .terminal-form{display:flex;margin-top:8px}
 .terminal-input{flex:1;background:transparent;border:0;color:var(--term-fg);padding:8px;font-family:inherit;font-size:15px;outline:none}
