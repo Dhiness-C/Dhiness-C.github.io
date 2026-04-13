@@ -35,7 +35,7 @@
 
     const commands = {
       help(){ return 'available commands: help about projects github soundcloud clear date echo contact'; },
-      about(){ return 'Dhiness. C — tinkerer, dev, audio hobbyist.\nI like retro terminals and sonic experiments.'; },
+      about(){ return 'My name is Dhiness.C \nI like coding and building things. \n I also love bouldering with my friends. \n This would not be complete if I did not mention that I also love playing games.'; },
       projects(){ return 'projects:\n- tiny-audio\n- retro-tools\n- misc experiments\n(see GitHub)'; },
       github(){ return 'https://github.com/Dhiness-C'; },
       soundcloud(){ return 'https://soundcloud.com/'; },
