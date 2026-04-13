@@ -1,13 +1,21 @@
 :root{
-  --bg:#0f1720; --fg:#e6eef8; --accent:#ffcc66;
+  --bg:#d7e7fb; --panel:#ffffff; --fg:#0b1b2b; --accent:#0b6cff; --muted:#63748a;
 }
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#081018);color:var(--fg);font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
-main{max-width:780px;margin:6vh auto;padding:2rem}
-h1{font-family:monospace;font-size:2.2rem;margin:0 0 .2rem;color:var(--accent)}
-.tagline{opacity:.8;margin-top:0}
-.links{display:flex;gap:.6rem;flex-wrap:wrap;margin:.8rem 0}
-.links a{color:var(--fg);text-decoration:none;padding:.25rem .5rem;border:1px solid rgba(255,255,255,.06);border-radius:6px}
-.about{margin:1rem 0;padding:.8rem;background:rgba(255,255,255,.02);border-radius:8px}
-.petscii{background:#000;padding:1rem;border-radius:6px;color:#9ae6b4;overflow:auto}
-footer{margin-top:1.2rem;color:rgba(255,255,255,.5);font-size:.9rem}
+html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#cfe5fb);color:var(--fg);font-family:ui-monospace,Menlo,Monaco,monospace}
+.desktop{max-width:900px;margin:5vh auto;padding:1rem}
+.menubar{display:flex;justify-content:space-between;background:#e6f0ff;border:1px solid #c5d9ff;padding:.4rem .6rem;border-radius:6px;font-size:.9rem;color:var(--muted)}
+.window{margin-top:1rem;border:2px solid #9fbff8;border-radius:6px;box-shadow:6px 6px 0 rgba(0,0,0,.06)}
+.titlebar{background:linear-gradient(180deg,#eaf4ff,#d6ebff);padding:.45rem .75rem;border-bottom:1px solid #bcd6ff;font-weight:700;color:var(--fg)}
+.window-body{padding:1rem;background:var(--panel)}
+h1{font-size:1.8rem;margin:.2rem 0;color:var(--accent)}
+.tagline{color:var(--muted);margin:0 0 .6rem}
+.links{display:flex;gap:.6rem;flex-wrap:wrap;margin:.6rem 0}
+.links a{color:var(--fg);text-decoration:none;padding:.25rem .6rem;border:1px solid #e4efff;background:#f7fbff;border-radius:6px;font-size:.95rem}
+.about{margin:1rem 0;color:var(--muted)}
+.petscii{background:#00121a;padding:1rem;border-radius:6px;color:#9ae6b4;overflow:auto;font-size:.85rem}
+footer{margin-top:1rem;color:var(--muted);font-size:.9rem}
+
+/* small responsive */
+@media(min-width:1100px){.desktop{max-width:1100px}}
+
