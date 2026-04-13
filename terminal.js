@@ -30,16 +30,14 @@
         'about — short bio',
         'projects — a brief project list',
         'github — link to my GitHub profile',
-        'soundcloud — link to SoundCloud.',
         'date — current date/time.',
         'echo — repeats whatever you say :).',
         'clear — clears the terminal.'
       ].join('\n');
     },
-    about(){ return 'My name is Dhiness.C.\nI love to build things that is completely different to what I know, only so I can learn more.\n I also love bouldering, its my escape from reality.\n I do a lot of personal projects in my free time.'; },
-    projects(){ return 'projects:\n- tiny-audio\n- retro-tools\n- misc experiments\n(see GitHub)'; },
+    about(){ return 'My name is Dhiness.C.\nI love to build things that is completely different to what I know, only so I can learn more.\n I also love bouldering, its my escape from reality.\n I do a lot of personal projects in my free time.\n Best project of the year award in ISDC 2023.\n Third Place in spUN Debates 2025.\n I am currently an A-level Student doing 4 A-levels: Mathematics, Physics, Computer Science and Further Mathematics'; },
+    projects(){ return 'projects:\n- A finance tracking software\n- Lots of discord bots for various servers\n- An AI assistant that runs locally\n- lots of other\n(for first three, see GitHub)'; },
     github(){ return 'https://github.com/Dhiness-C'; },
-    soundcloud(){ return 'https://soundcloud.com/'; },
 
     date(){ return new Date().toString(); },
     echo(...args){ return args.join(' '); },
