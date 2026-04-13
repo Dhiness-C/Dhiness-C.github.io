@@ -28,13 +28,12 @@
       return [
         'help — show this list of commands',
         'about — short bio',
-        'projects — brief project list',
-        'github — link to GitHub profile',
-        'soundcloud — link to SoundCloud',
-        'contact — contact information',
-        'date — current date/time',
-        'echo — repeat provided text',
-        'clear — clear the terminal'
+        'projects — a brief project list',
+        'github — link to my GitHub profile',
+        'soundcloud — link to SoundCloud.',
+        'date — current date/time.',
+        'echo — repeats whatever you say :).',
+        'clear — clears the terminal.'
       ].join('\n');
     },
     about(){ return 'My name is Dhiness.C.\nI love to build things that is completely different to what I know, only so I can learn more.\n I also love bouldering, its my escape from reality.\n I do a lot of personal projects in my free time.'; },
