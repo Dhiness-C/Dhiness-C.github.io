@@ -3,9 +3,44 @@
   const out = document.getElementById('terminal-output');
   if(!out) return;
 
-  const PROMPT = (function(){
-    try { return (window.COMPUTER_NAME || 'visitor') + '@local:~$'; } catch(e){ return 'visitor@local:~$'; }
-  })();
+  // virtual filesystem and dynamic prompt
+  const vfs = {
+    type: 'dir',
+    name: '/',
+    entries: {
+      'main': { type: 'dir', entries: { 'README.txt': { type: 'file', content: 'Welcome to the main folder.' } } },
+      'games': { type: 'dir', entries: { 'snake': { type: 'file', content: 'A terminal snake game will be here.' } } }
+    }
+  };
+
+  let currentPath = '/'; // start at root where `ls` shows `main` and `games`
+
+  function resolvePath(path){
+    if(!path) return null;
+    const parts = path.split('/').filter(Boolean);
+    let node = vfs;
+    for(const p of parts){
+      if(!node || node.type !== 'dir' || !node.entries[p]) return null;
+      node = node.entries[p];
+    }
+    return node;
+  }
+
+  function joinPath(base, name){
+    if(name === '/' ) return '/';
+    if(name.startsWith('/')) return name;
+    if(base === '/') return `/${name}`;
+    return `${base}/${name}`;
+  }
+
+  function displayPath(path){
+    if(path === '/' ) return '~';
+    return '~' + path;
+  }
+
+  function getPrompt(){
+    try { return (window.COMPUTER_NAME || 'visitor') + '@local:' + displayPath(currentPath) + '$'; } catch(e){ return 'visitor@local:' + displayPath(currentPath) + '$'; }
+  }
 
   let history = [];
   let hidx = 0;
@@ -31,6 +66,8 @@
         'projects — a brief project list',
         'github — link to my GitHub profile',
         'date — current date/time.',
+        'ls — list files in the current directory',
+        'cd — change directory (e.g. cd games)',
         'echo — repeats whatever you say :).',
         'clear — clears the terminal.'
       ].join('\n');
@@ -49,6 +86,42 @@
     const parts = line.split(/\s+/);
     const cmd = parts[0].toLowerCase();
     const args = parts.slice(1);
+
+    // builtin: ls
+    if(cmd === 'ls'){
+      const node = resolvePath(currentPath);
+      if(!node || node.type !== 'dir') return 'ls: not a directory';
+      const names = Object.keys(node.entries || {}).map(n => node.entries[n].type === 'dir' ? n + '/' : n);
+      return names.join('\n');
+    }
+
+    // builtin: cd
+    if(cmd === 'cd'){
+      const target = args[0] || '/';
+      if(target === '/') { currentPath = '/'; return ''; }
+      if(target === '..'){
+        if(currentPath === '/') return '';
+        const parts = currentPath.split('/').filter(Boolean);
+        parts.pop();
+        currentPath = parts.length ? '/' + parts.join('/') : '/';
+        return '';
+      }
+      const newPath = joinPath(currentPath === '/' ? '/' : currentPath, target);
+      const node = resolvePath(newPath);
+      if(node && node.type === 'dir') { currentPath = newPath; return ''; }
+      return `cd: no such file or directory: ${target}`;
+    }
+
+    // launch snake if requested and available in current dir
+    if(cmd === 'snake'){
+      const node = resolvePath(joinPath(currentPath === '/' ? '/' : currentPath, 'games'));
+      // allow starting snake only if in /games or the file exists in current dir
+      const inGames = currentPath === '/games' || (resolvePath(joinPath(currentPath, 'snake')) && resolvePath(joinPath(currentPath, 'snake')).type === 'file');
+      if(inGames){ startSnakeGame(); return '__GAME_START__'; }
+      return 'snake: command not found';
+    }
+
+    // fallback to existing command table
     if(commands[cmd]) return commands[cmd].apply(null,args);
     return `command not found: ${cmd}`;
   }
@@ -59,7 +132,7 @@
 
     const promptSpan = document.createElement('span');
     promptSpan.className = 'prompt';
-    promptSpan.textContent = PROMPT + ' ';
+    promptSpan.textContent = getPrompt() + ' ';
 
     const input = document.createElement('input');
     input.className = 'terminal-input';
@@ -88,7 +161,8 @@
           const html = esc(res).replace(/\n/g,'<br>');
           writeLine(html);
         }
-        createPrompt();
+        // if a game was started, runCommand returns '__GAME_START__' and we must NOT create a new prompt
+        if(res !== '__GAME_START__') createPrompt();
       } else if(e.key === 'ArrowUp'){
         if(history.length && hidx>0) hidx--; input.value = history[hidx]||''; e.preventDefault();
       } else if(e.key === 'ArrowDown'){
@@ -98,8 +172,86 @@
     });
   }
 
+  // --- Snake game implementation ---
+  function startSnakeGame(){
+    writeLine('<div>Starting Snake — use Arrow keys or WASD. Press Q to quit.</div>');
+    const rows = 12, cols = 24;
+    const gridEl = document.createElement('pre');
+    gridEl.className = 'snake-grid';
+    gridEl.style.fontFamily = 'monospace';
+    gridEl.style.fontSize = '14px';
+    gridEl.style.lineHeight = '1';
+    gridEl.style.margin = '6px 0';
+    out.appendChild(gridEl);
+    out.scrollTop = out.scrollHeight;
+
+    let snake = [{x: Math.floor(cols/2), y: Math.floor(rows/2)}];
+    let dir = {x:1,y:0};
+    let food = null;
+    let score = 0;
+    let running = true;
+
+    function placeFood(){
+      while(true){
+        const fx = Math.floor(Math.random()*cols);
+        const fy = Math.floor(Math.random()*rows);
+        if(!snake.some(s=>s.x===fx && s.y===fy)){ food = {x:fx,y:fy}; break; }
+      }
+    }
+    placeFood();
+
+    function draw(){
+      let outStr = '';
+      for(let y=0;y<rows;y++){
+        for(let x=0;x<cols;x++){
+          if(snake[0].x===x && snake[0].y===y) outStr += 'O';
+          else if(snake.slice(1).some(s=>s.x===x && s.y===y)) outStr += 'o';
+          else if(food && food.x===x && food.y===y) outStr += '*';
+          else outStr += '.';
+        }
+        outStr += '\n';
+      }
+      gridEl.textContent = outStr + '\nScore: ' + score;
+      out.scrollTop = out.scrollHeight;
+    }
+
+    function gameOver(){
+      running = false;
+      document.removeEventListener('keydown', keyHandler);
+      clearInterval(tid);
+      writeLine('<div>Game over — score: ' + score + '</div>');
+      gridEl.remove();
+      createPrompt();
+    }
+
+    function step(){
+      const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+      // walls collision
+      if(head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows) return gameOver();
+      // self collision
+      if(snake.some(s=>s.x===head.x && s.y===head.y)) return gameOver();
+      snake.unshift(head);
+      if(food && head.x===food.x && head.y===food.y){ score++; placeFood(); }
+      else snake.pop();
+      draw();
+    }
+
+    function keyHandler(e){
+      const k = e.key;
+      if(k === 'ArrowUp' || k === 'w' || k === 'W') { if(dir.y!==1) dir = {x:0,y:-1}; e.preventDefault(); }
+      else if(k === 'ArrowDown' || k === 's' || k === 'S') { if(dir.y!==-1) dir = {x:0,y:1}; e.preventDefault(); }
+      else if(k === 'ArrowLeft' || k === 'a' || k === 'A') { if(dir.x!==1) dir = {x:-1,y:0}; e.preventDefault(); }
+      else if(k === 'ArrowRight' || k === 'd' || k === 'D') { if(dir.x!==-1) dir = {x:1,y:0}; e.preventDefault(); }
+      else if(k === 'q' || k === 'Q') { gameOver(); }
+    }
+
+    document.addEventListener('keydown', keyHandler);
+    draw();
+    const tid = setInterval(()=>{ if(running) step(); }, 180);
+  }
+
   // initial content and prompt
-  writeLine('<div>Welcome to Dhiness. C — type <strong>help</strong> to get started.</div>');
+  writeLine('<div>Welcome to my domain fellow visitor, how may I help you? — type <strong>help</strong> to get started.</div>');
   createPrompt();
 
 })();
