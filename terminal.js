@@ -40,7 +40,7 @@
     projects(){ return 'projects:\n- tiny-audio\n- retro-tools\n- misc experiments\n(see GitHub)'; },
     github(){ return 'https://github.com/Dhiness-C'; },
     soundcloud(){ return 'https://soundcloud.com/'; },
-    contact(){ return 'discord: Dhiness#0000\nemail: you@example.com'; },
+
     date(){ return new Date().toString(); },
     echo(...args){ return args.join(' '); },
     clear(){ clear(); return ''; }
