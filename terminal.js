@@ -23,8 +23,20 @@
 
   function clear(){ out.innerHTML = ''; }
 
-  const commands = {
-    help(){ return 'available commands: help about projects github soundcloud clear date echo contact'; },
+    const commands = {
+    help(){
+      return [
+        'help — show this list of commands',
+        'about — short bio',
+        'projects — brief project list',
+        'github — link to GitHub profile',
+        'soundcloud — link to SoundCloud',
+        'contact — contact information',
+        'date — current date/time',
+        'echo — repeat provided text',
+        'clear — clear the terminal'
+      ].join('\n');
+    },
     about(){ return 'Dhiness. C — tinkerer, dev, audio hobbyist.\nI like retro terminals and sonic experiments.'; },
     projects(){ return 'projects:\n- tiny-audio\n- retro-tools\n- misc experiments\n(see GitHub)'; },
     github(){ return 'https://github.com/Dhiness-C'; },
