@@ -204,7 +204,7 @@
       barOuter.appendChild(barInner);
 
       const pctText = document.createElement('div');
-      Object.assign(pctText.style, { marginTop: '8px', fontSize: '18px' });
+      Object.assign(pctText.style, { marginTop: '9px', fontSize: '19px' });
 
       const fileList = document.createElement('div');
       Object.assign(fileList.style, { marginTop: '20px', textAlign: 'left', maxHeight: '240px', overflow: 'auto', background: '#0b0b0b', padding: '12px', borderRadius: '6px', color: '#ddd' });
