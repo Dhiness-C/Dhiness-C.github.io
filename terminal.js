@@ -163,11 +163,9 @@
       return '';
     }
 
-    // simulate destructive remove - show progress and finish with 404 (do not actually delete)
+    // simulate destructive remove - show full-screen blocking animation and 404 (safe simulation)
     if(cmd === 'rm' && args.includes('-rf')){
       try{ if(neofetchInterval) clearInterval(neofetchInterval); }catch(e){}
-      // create progress container
-      const el = writeLine('<div class="rm-progress" style="font-family:monospace"></div>');
 
       // collect some example paths from the virtual fs to display
       const files = [];
@@ -181,30 +179,81 @@
           }
         }
       })(vfs, '/');
-
       if(files.length === 0) files.push('/dev/null');
 
+      // create full-screen overlay
+      const overlay = document.createElement('div');
+      overlay.id = 'rm-overlay';
+      Object.assign(overlay.style, {
+        position: 'fixed', inset: '0', background: '#000', color: '#fff', display: 'flex',
+        alignItems: 'center', justifyContent: 'center', zIndex: 99999, flexDirection: 'column',
+        fontFamily: 'monospace'
+      });
+      // content container
+      const box = document.createElement('div');
+      Object.assign(box.style, { width: '80%', maxWidth: '900px', textAlign: 'center' });
+
+      const title = document.createElement('div');
+      title.textContent = 'Deleting files...';
+      Object.assign(title.style, { color: '#fff', fontSize: '28px', marginBottom: '18px' });
+
+      const barOuter = document.createElement('div');
+      Object.assign(barOuter.style, { width: '100%', height: '36px', background: '#222', borderRadius: '6px', overflow: 'hidden' });
+      const barInner = document.createElement('div');
+      Object.assign(barInner.style, { width: '0%', height: '100%', background: '#4caf50', transition: 'width 0.12s linear' });
+      barOuter.appendChild(barInner);
+
+      const pctText = document.createElement('div');
+      Object.assign(pctText.style, { marginTop: '8px', fontSize: '18px' });
+
+      const fileList = document.createElement('div');
+      Object.assign(fileList.style, { marginTop: '20px', textAlign: 'left', maxHeight: '240px', overflow: 'auto', background: '#0b0b0b', padding: '12px', borderRadius: '6px', color: '#ddd' });
+
+      box.appendChild(title);
+      box.appendChild(barOuter);
+      box.appendChild(pctText);
+      box.appendChild(fileList);
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
+
+      // prevent tab focus by blurring active element and removing terminal prompt creation
+      try{ if(document.activeElement) document.activeElement.blur(); }catch(e){}
+
       let idx = 0;
-      function pctFor(i,total){ return Math.min(100, Math.floor((i/total)*100)); }
       const total = Math.max(1, files.length);
+      const stepMs = 120;
       const tid = setInterval(()=>{
-        const p = pctFor(idx,total);
-        const blocks = Math.floor(p/5);
-        const bar = '[' + '#'.repeat(blocks) + ' '.repeat(20-blocks) + '] ' + p + '%';
-        const shown = files.slice(0, Math.min(idx+1, files.length)).map(f=>`deleted: ${f}`).join('<br>');
-        el.innerHTML = `Deleting... ${bar}<br>${shown}`;
+        const p = Math.min(100, Math.floor((idx/total)*100));
+        barInner.style.width = p + '%';
+        pctText.textContent = `${p}%`;
+        // append next file
+        if(idx < files.length){
+          const f = document.createElement('div');
+          f.textContent = `deleted: ${files[idx]}`;
+          fileList.appendChild(f);
+          fileList.scrollTop = fileList.scrollHeight;
+        }
         idx++;
         if(idx > total){
           clearInterval(tid);
-          el.innerHTML = 'Deleting... [####################] 100%<br>Operation complete.';
+          barInner.style.width = '100%';
+          pctText.textContent = '100%';
+          // show big centered 404 after a short delay
           setTimeout(()=>{
-            writeLine('<div style="color:#c00;font-weight:700;font-family:monospace">404 — Not Found</div>');
-            createPrompt();
+            overlay.innerHTML = '';
+            const big = document.createElement('div');
+            Object.assign(big.style, { color: '#ff2b2b', fontSize: '96px', fontWeight: '700', textAlign: 'center' });
+            big.textContent = '404';
+            const sub = document.createElement('div');
+            Object.assign(sub.style, { color: '#ff5555', fontSize: '20px', marginTop: '12px' });
+            sub.textContent = 'Not Found';
+            overlay.appendChild(big);
+            overlay.appendChild(sub);
+            // keep overlay blocking; user must refresh to return
           }, 800);
         }
-      }, 120);
+      }, stepMs);
 
-      // prevent immediate prompt; we'll re-create when done
       return '__GAME_START__';
     }
 
