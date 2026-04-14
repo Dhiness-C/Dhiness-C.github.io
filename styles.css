@@ -1,7 +1,7 @@
 /* Cleaned stylesheet: full-viewport terminal with requested green background (#61BB46) */
 :root{
   --page-green: #223B22; /* darker, toned-down green (R:34 G:59 B:34) */
-  --term-bg: #07140a; /* dark terminal background */
+  --term-bg: #223B22; /* dark terminal background */
   --term-fg: #FFD966; /* warm yellow for terminal text */
 }
 *{box-sizing:border-box}

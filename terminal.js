@@ -38,12 +38,19 @@
     return '~' + path;
   }
 
+  function getDeviceName(){
+    // Force a consistent anonymous prompt label for privacy
+    return 'visitor';
+  }
+
   function getPrompt(){
-    try { return (window.COMPUTER_NAME || 'visitor') + '@local:' + displayPath(currentPath) + '$'; } catch(e){ return 'visitor@local:' + displayPath(currentPath) + '$'; }
+    return getDeviceName() + '@local:' + displayPath(currentPath) + '$';
   }
 
   let history = [];
   let hidx = 0;
+  const START_TS = Date.now();
+  let neofetchInterval = null;
 
   function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -69,6 +76,7 @@
         'ls — list files in the current directory',
         'cd — change directory (e.g. cd games)',
         'echo — repeats whatever you say :).',
+        'neofetch — show system information',
         'clear — clears the terminal.'
       ].join('\n');
     },
@@ -78,7 +86,29 @@
 
     date(){ return new Date().toString(); },
     echo(...args){ return args.join(' '); },
-    clear(){ clear(); return ''; }
+    clear(){ clear(); return ''; },
+    neofetch(){
+      const name = getDeviceName();
+      const ua = navigator.userAgent || navigator.platform || '';
+      const os = /Macintosh|Mac OS X/.test(ua) ? 'macOS' : /Windows/.test(ua) ? 'Windows' : /Android/.test(ua) ? 'Android' : /iPhone|iPad|iPod/.test(ua) ? 'iOS' : 'Linux';
+      const lines = [
+        '            .-/+oossssoo+/-.',
+        '        .:+ssssssssssssssssss+:.',
+        '      -+ssssssssssssssssssyyssss+-',
+        '    .ossssssssssssssssssdMMMNysssso.',
+        `${name}@local`,
+        `OS: ${os}`,
+        'Kernel: 5.16.0',
+        'Uptime: 3 hours, 12 mins',
+        'Packages: 123 (apt)',
+        'Shell: web-terminal',
+        'Resolution: 1200x800',
+        'CPU: Intel Core i9',
+        'GPU: Vega',
+        'Memory: 4096MiB / 8192MiB'
+      ];
+      return lines.join('\n');
+    }
   };
 
   function runCommand(line){
@@ -110,6 +140,47 @@
       const node = resolvePath(newPath);
       if(node && node.type === 'dir') { currentPath = newPath; return ''; }
       return `cd: no such file or directory: ${target}`;
+    }
+
+    // launch snake if requested and available in current dir
+    if(cmd === 'neofetch'){
+      // clear any previous updater
+      try{ if(neofetchInterval) clearInterval(neofetchInterval); }catch(e){}
+      const name = getDeviceName();
+      const ua = navigator.userAgent || navigator.platform || '';
+      const os = 'MaineCoonOS v3.2.1';
+      function fmtUptime(ms){
+        const s = Math.floor(ms/1000);
+        const days = Math.floor(s/86400); const hrs = Math.floor((s%86400)/3600);
+        const mins = Math.floor((s%3600)/60); const secs = s%60;
+        return (days?days+"d ":"") + (hrs?hrs+"h ":"") + (mins?mins+"m ":"") + secs+"s";
+      }
+      const resolution = `${window.screen.width}x${window.screen.height}`;
+      const html = `
+<div class="neofetch-wrap" style="display:flex;gap:12px;align-items:flex-start">
+  <pre style="margin:0;line-height:1;font-family:monospace">            .-/+oossssoo+/-.\n        .:+ssssssssssssssssss+:.\n      -+ssssssssssssssssssyyssss+-\n    .ossssssssssssssssssdMMMNysssso.</pre>
+  <div style="font-family:monospace;line-height:1.3">
+    <div><strong>${name}@local</strong></div>
+    <div>OS: ${os}</div>
+    <div>Kernel: 5.16.0</div>
+    <div>Uptime: <span class="uptime">${fmtUptime(Date.now()-START_TS)}</span></div>
+    <div>Resolution: <span class="resolution">${resolution}</span></div>
+    <div>Packages: 123 (apt)</div>
+    <div>Shell: web-terminal</div>
+    <div>CPU: Intel Core i9</div>
+    <div>GPU: Vega</div>
+    <div>Memory: 4096MiB / 8192MiB</div>
+  </div>
+</div>`;
+      writeLine(html);
+      // update uptime and resolution every second
+      neofetchInterval = setInterval(()=>{
+        const el = out.querySelector('.neofetch-wrap .uptime');
+        const resEl = out.querySelector('.neofetch-wrap .resolution');
+        if(el) el.textContent = fmtUptime(Date.now()-START_TS);
+        if(resEl) resEl.textContent = `${window.screen.width}x${window.screen.height}`;
+      },1000);
+      return '';
     }
 
     // launch snake if requested and available in current dir
