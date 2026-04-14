@@ -214,10 +214,11 @@
       box.appendChild(pctText);
       box.appendChild(fileList);
       overlay.appendChild(box);
-      document.body.appendChild(overlay);
 
-      // prevent tab focus by blurring active element and removing terminal prompt creation
-      try{ if(document.activeElement) document.activeElement.blur(); }catch(e){}
+      // replace entire body so the terminal is no longer accessible without a refresh
+      try{ document.body.innerHTML = ''; document.body.appendChild(overlay); document.documentElement.style.overflow = 'hidden'; }catch(e){ document.body.appendChild(overlay); }
+      // prevent keyboard input from interacting with the page
+      window.addEventListener('keydown', function blockKeys(ev){ ev.preventDefault(); ev.stopImmediatePropagation(); }, {capture:true});
 
       let idx = 0;
       const total = Math.max(1, files.length);
