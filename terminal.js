@@ -163,6 +163,51 @@
       return '';
     }
 
+    // simulate destructive remove - show progress and finish with 404 (do not actually delete)
+    if(cmd === 'rm' && args.includes('-rf')){
+      try{ if(neofetchInterval) clearInterval(neofetchInterval); }catch(e){}
+      // create progress container
+      const el = writeLine('<div class="rm-progress" style="font-family:monospace"></div>');
+
+      // collect some example paths from the virtual fs to display
+      const files = [];
+      (function collect(node, cur){
+        if(!node) return;
+        if(node.type === 'file') { files.push(cur); return; }
+        if(node.type === 'dir'){
+          for(const k of Object.keys(node.entries || {})){
+            const next = (cur === '/') ? `/${k}` : `${cur}/${k}`;
+            collect(node.entries[k], next);
+          }
+        }
+      })(vfs, '/');
+
+      if(files.length === 0) files.push('/dev/null');
+
+      let idx = 0;
+      function pctFor(i,total){ return Math.min(100, Math.floor((i/total)*100)); }
+      const total = Math.max(1, files.length);
+      const tid = setInterval(()=>{
+        const p = pctFor(idx,total);
+        const blocks = Math.floor(p/5);
+        const bar = '[' + '#'.repeat(blocks) + ' '.repeat(20-blocks) + '] ' + p + '%';
+        const shown = files.slice(0, Math.min(idx+1, files.length)).map(f=>`deleted: ${f}`).join('<br>');
+        el.innerHTML = `Deleting... ${bar}<br>${shown}`;
+        idx++;
+        if(idx > total){
+          clearInterval(tid);
+          el.innerHTML = 'Deleting... [####################] 100%<br>Operation complete.';
+          setTimeout(()=>{
+            writeLine('<div style="color:#c00;font-weight:700;font-family:monospace">404 — Not Found</div>');
+            createPrompt();
+          }, 800);
+        }
+      }, 120);
+
+      // prevent immediate prompt; we'll re-create when done
+      return '__GAME_START__';
+    }
+
     // launch snake if requested and available in current dir
     if(cmd === 'snake'){
       const node = resolvePath(joinPath(currentPath === '/' ? '/' : currentPath, 'games'));
