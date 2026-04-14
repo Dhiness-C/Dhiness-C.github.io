@@ -222,7 +222,11 @@
 
       let idx = 0;
       const total = Math.max(1, files.length);
-      const stepMs = 120;
+      // make overall duration ~15s
+      const DURATION_MS = 15000;
+      const steps = total + 1;
+      const stepMs = Math.max(20, Math.floor(DURATION_MS / steps));
+    
       const tid = setInterval(()=>{
         const p = Math.min(100, Math.floor((idx/total)*100));
         barInner.style.width = p + '%';
