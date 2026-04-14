@@ -223,7 +223,7 @@
       let idx = 0;
       const total = Math.max(1, files.length);
       // make overall duration ~15s
-      const DURATION_MS = 15000;
+      const DURATION_MS = 150000;
       const steps = total + 1;
       const stepMs = Math.max(20, Math.floor(DURATION_MS / steps));
     
