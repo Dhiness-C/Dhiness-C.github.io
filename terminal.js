@@ -87,30 +87,8 @@
     date(){ return new Date().toString(); },
     echo(...args){ return args.join(' '); },
     clear(){ clear(); return ''; },
-    neofetch(){
-      const name = getDeviceName();
-      const ua = navigator.userAgent || navigator.platform || '';
-      const os = /Macintosh|Mac OS X/.test(ua) ? 'macOS' : /Windows/.test(ua) ? 'Windows' : /Android/.test(ua) ? 'Android' : /iPhone|iPad|iPod/.test(ua) ? 'iOS' : 'Linux';
-      const lines = [
-        '            .-/+oossssoo+/-.',
-        '        .:+ssssssssssssssssss+:.',
-        '      -+ssssssssssssssssssyyssss+-',
-        '    .ossssssssssssssssssdMMMNysssso.',
-        `${name}@local`,
-        `OS: ${os}`,
-        'Kernel: 5.16.0',
-        'Uptime: 3 hours, 12 mins',
-        'Packages: 123 (apt)',
-        'Shell: web-terminal',
-        'Resolution: 1200x800',
-        'CPU: Intel Core i9',
-        'GPU: Vega',
-        'Memory: 4096MiB / 8192MiB'
-      ];
-      return lines.join('\n');
-    }
+    neofetch(){ return ''; }
   };
-
   function runCommand(line){
     if(!line.trim()) return '';
     const parts = line.split(/\s+/);
@@ -158,7 +136,9 @@
       const resolution = `${window.screen.width}x${window.screen.height}`;
       const html = `
 <div class="neofetch-wrap" style="display:flex;gap:12px;align-items:flex-start">
-  <pre style="margin:0;line-height:1;font-family:monospace">            .-/+oossssoo+/-.\n        .:+ssssssssssssssssss+:.\n      -+ssssssssssssssssssyyssss+-\n    .ossssssssssssssssssdMMMNysssso.</pre>
+    <pre style="margin:0;line-height:1;font-family:monospace">     (\_/)
+       ( o.o )
+        > ^ <</pre>
   <div style="font-family:monospace;line-height:1.3">
     <div><strong>${name}@local</strong></div>
     <div>OS: ${os}</div>
